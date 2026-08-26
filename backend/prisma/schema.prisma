@@ -1,0 +1,90 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id                   String   @id @default(cuid())
+  name                 String
+  goal                 String
+  summary              String?
+  deadline             DateTime?
+  teamSize             Int      @default(1)
+  experienceLevel      String   @default("intermediate")
+  technologyStack      String   @default("[]")
+  estimatedDurationDays Int?
+  status               String   @default("active")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tasks        Task[]
+  aiExecutions AIExecution[]
+
+  @@map("projects")
+}
+
+model Task {
+  id               String   @id @default(cuid())
+  projectId        String
+  title            String
+  description      String?
+  priority         String   @default("MEDIUM")
+  status           String   @default("TODO")
+  estimatedHours   Float?
+  suggestedDeadline DateTime?
+  actualDeadline   DateTime?
+  category         String?
+  tags             String   @default("[]")
+  dependencies     String   @default("[]")
+  executionOrder   Int?
+  position         Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  subtasks Subtask[]
+
+  @@map("tasks")
+}
+
+model Subtask {
+  id             String   @id @default(cuid())
+  taskId         String
+  title          String
+  completed      Boolean  @default(false)
+  estimatedHours Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("subtasks")
+}
+
+model AIExecution {
+  id               String   @id @default(cuid())
+  projectId        String?
+  input            String
+  retrievedDocs    String   @default("[]")
+  model            String
+  promptVersion    String   @default("1.0")
+  prompt           String?
+  response         String?
+  parsedJson       String?
+  validationStatus String   @default("pending")
+  validationErrors String   @default("[]")
+  retryCount       Int      @default(0)
+  executionTimeMs  Int?
+  tokensUsed       Int?
+  createdAt        DateTime @default(now())
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("ai_executions")
+}

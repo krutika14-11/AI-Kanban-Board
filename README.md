@@ -193,6 +193,10 @@ npm run dev
 
 The frontend runs on **http://localhost:5173**
 
+### Production deployment
+
+Netlify deploys the React frontend only; the Express API, SQLite database, and AI/RAG services must run on a separate backend host. In Netlify, set the `VITE_API_URL` environment variable to that backend's public URL (with or without a trailing `/api`) before building. Without it, requests to `/api` are handled by the static-site fallback and project pages cannot load or generate plans.
+
 ---
 
 ## Environment Variables

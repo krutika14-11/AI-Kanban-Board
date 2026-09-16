@@ -111,12 +111,11 @@ export default function ProjectDetailPage() {
   }
 
   const latestExecution = executions[0];
-  const parsedLatestPlan = latestExecution?.parsedJson
-    ? JSON.parse(latestExecution.parsedJson)
-    : null;
-  const latestDocs = latestExecution?.retrievedDocs
-    ? JSON.parse(latestExecution.retrievedDocs)
-    : [];
+  const parsedLatestPlan = safeParseJson<unknown>(latestExecution?.parsedJson, null);
+  const latestDocs = safeParseJson<Array<{ title: string; category: string; score: number }>>(
+    latestExecution?.retrievedDocs,
+    []
+  );
 
   const tabs: Array<{ id: Tab; icon: typeof BarChart3; label: string }> = [
     { id: 'kanban', icon: BarChart3, label: 'Kanban' },
@@ -367,14 +366,14 @@ export default function ProjectDetailPage() {
                       <div>
                         <div className="text-xs text-slate-500">Retrieved Docs</div>
                         <div className="text-slate-300">
-                          {exec.retrievedDocs ? JSON.parse(exec.retrievedDocs).length : 0}
+                          {safeParseJson<unknown[]>(exec.retrievedDocs, []).length}
                         </div>
                       </div>
                     </div>
 
-                    {exec.parsedJson && (
+                    {safeParseJson<unknown>(exec.parsedJson, null) && (
                       <div className="mt-3">
-                        <JSONViewer data={JSON.parse(exec.parsedJson)} title="Parsed Plan" compact />
+                        <JSONViewer data={safeParseJson<unknown>(exec.parsedJson, null)} title="Parsed Plan" compact />
                       </div>
                     )}
                   </div>
@@ -396,4 +395,14 @@ export default function ProjectDetailPage() {
       />
     </div>
   );
+}
+
+function safeParseJson<T>(value: string | undefined | null, fallback: T): T {
+  if (!value) return fallback;
+
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
 }

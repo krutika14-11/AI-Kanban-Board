@@ -1,5 +1,5 @@
 import api from './api';
-import { Task, TaskStatus, ApiResponse } from '../types';
+import { Task, TaskStatus, ApiResponse, Subtask } from '../types';
 
 export const tasksService = {
   async getByProject(projectId: string): Promise<Task[]> {
@@ -26,8 +26,9 @@ export const tasksService = {
     await api.delete(`/tasks/${id}`);
   },
 
-  async updateSubtask(id: string, completed: boolean): Promise<void> {
-    await api.patch(`/tasks/subtasks/${id}`, { completed });
+  async updateSubtask(id: string, input: Partial<Pick<Subtask, 'title' | 'completed'>>): Promise<Subtask> {
+    const { data } = await api.patch<ApiResponse<Subtask>>(`/tasks/subtasks/${id}`, input);
+    return data.data;
   },
 
   async addSubtask(taskId: string, title: string, estimatedHours?: number): Promise<void> {

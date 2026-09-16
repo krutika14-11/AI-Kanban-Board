@@ -89,7 +89,10 @@ export const aiService = {
         promptVersion: PROMPT_VERSION,
         prompt: prompt.slice(0, 5000),
         response: rawResponse.slice(0, 5000),
-        parsedJson: plan ? JSON.stringify(plan).slice(0, 5000) : null,
+        // This value is displayed again on the project detail page. Truncating it
+        // produces invalid JSON and causes the frontend to crash when reopening a
+        // project with a larger AI plan.
+        parsedJson: plan ? JSON.stringify(plan) : null,
         validationStatus: plan ? 'success' : 'failed',
         validationErrors: JSON.stringify(plan ? [] : [lastError]),
         retryCount,

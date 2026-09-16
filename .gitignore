@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 */node_modules/
+.tools/
+node-v*-win-x64.zip
+node-v*-x64.msi
 
 # Build outputs
 dist/

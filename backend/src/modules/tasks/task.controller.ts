@@ -27,6 +27,13 @@ const updateStatusSchema = z.object({
   status: z.enum(['BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE']),
 });
 
+const updateSubtaskSchema = z.object({
+  title: z.string().trim().min(1).max(300).optional(),
+  completed: z.boolean().optional(),
+}).refine(input => input.title !== undefined || input.completed !== undefined, {
+  message: 'Provide a title or completed value',
+});
+
 export const taskController = {
   async getByProject(req: Request, res: Response) {
     const tasks = await taskService.getByProject(req.params.projectId);
@@ -71,8 +78,8 @@ export const taskController = {
   },
 
   async updateSubtask(req: Request, res: Response) {
-    const { completed } = z.object({ completed: z.boolean() }).parse(req.body);
-    const subtask = await taskService.updateSubtask(req.params.id, completed);
+    const input = updateSubtaskSchema.parse(req.body);
+    const subtask = await taskService.updateSubtask(req.params.id, input);
     res.json({ success: true, data: subtask });
   },
 

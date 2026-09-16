@@ -126,8 +126,8 @@ export const taskRepository = {
     );
   },
 
-  async updateSubtask(id: string, completed: boolean) {
-    return prisma.subtask.update({ where: { id }, data: { completed } });
+  async updateSubtask(id: string, input: { title?: string; completed?: boolean }) {
+    return prisma.subtask.update({ where: { id }, data: input });
   },
 
   async addSubtask(taskId: string, title: string, estimatedHours?: number) {

@@ -70,8 +70,8 @@ export const taskService = {
     return taskRepository.delete(id);
   },
 
-  async updateSubtask(id: string, completed: boolean) {
-    return taskRepository.updateSubtask(id, completed);
+  async updateSubtask(id: string, input: { title?: string; completed?: boolean }) {
+    return taskRepository.updateSubtask(id, input);
   },
 
   async addSubtask(taskId: string, title: string, estimatedHours?: number) {

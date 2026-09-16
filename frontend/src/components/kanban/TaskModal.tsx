@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2, CheckSquare, Square } from 'lucide-react';
+import { X, Plus, Trash2, CheckSquare, Square, Pencil, Check } from 'lucide-react';
 import { Task, TaskStatus, Priority } from '../../types';
 import { cn } from '../../utils/cn';
 import { tasksService } from '../../services/tasks.service';
@@ -31,6 +31,8 @@ export function TaskModal({ task, isOpen, onClose, projectId, defaultStatus = 'T
     tags: '',
   });
   const [newSubtask, setNewSubtask] = useState('');
+  const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
+  const [editingSubtaskTitle, setEditingSubtaskTitle] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -94,8 +96,27 @@ export function TaskModal({ task, isOpen, onClose, projectId, defaultStatus = 'T
   }
 
   async function handleToggleSubtask(subtaskId: string, completed: boolean) {
-    await tasksService.updateSubtask(subtaskId, !completed);
+    await tasksService.updateSubtask(subtaskId, { completed: !completed });
     qc.invalidateQueries({ queryKey: ['tasks', projectId] });
+  }
+
+  function startEditingSubtask(id: string, title: string) {
+    setEditingSubtaskId(id);
+    setEditingSubtaskTitle(title);
+  }
+
+  async function handleSaveSubtask() {
+    if (!editingSubtaskId || !editingSubtaskTitle.trim()) return;
+    await tasksService.updateSubtask(editingSubtaskId, { title: editingSubtaskTitle.trim() });
+    qc.invalidateQueries({ queryKey: ['tasks', projectId] });
+    setEditingSubtaskId(null);
+    setEditingSubtaskTitle('');
+    toast.success('Subtask updated');
+  }
+
+  function cancelEditingSubtask() {
+    setEditingSubtaskId(null);
+    setEditingSubtaskTitle('');
   }
 
   async function handleDeleteSubtask(subtaskId: string) {
@@ -242,12 +263,52 @@ export function TaskModal({ task, isOpen, onClose, projectId, defaultStatus = 'T
                         <Square className="w-4 h-4 text-slate-500" />
                       )}
                     </button>
-                    <span className={cn(
-                      'text-sm flex-1',
-                      subtask.completed ? 'line-through text-slate-500' : 'text-slate-300'
-                    )}>
-                      {subtask.title}
-                    </span>
+                    {editingSubtaskId === subtask.id ? (
+                      <input
+                        className="input flex-1 py-1 text-sm"
+                        value={editingSubtaskTitle}
+                        onChange={e => setEditingSubtaskTitle(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') void handleSaveSubtask();
+                          if (e.key === 'Escape') cancelEditingSubtask();
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <span className={cn(
+                        'text-sm flex-1',
+                        subtask.completed ? 'line-through text-slate-500' : 'text-slate-300'
+                      )}>
+                        {subtask.title}
+                      </span>
+                    )}
+                    {editingSubtaskId === subtask.id ? (
+                      <>
+                        <button
+                          onClick={() => void handleSaveSubtask()}
+                          disabled={!editingSubtaskTitle.trim()}
+                          className="text-slate-500 hover:text-green-400 disabled:opacity-40 transition-colors"
+                          aria-label="Save subtask"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={cancelEditingSubtask}
+                          className="text-slate-500 hover:text-slate-200 transition-colors"
+                          aria-label="Cancel subtask edit"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => startEditingSubtask(subtask.id, subtask.title)}
+                        className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-slate-200 transition-all"
+                        aria-label="Edit subtask"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <button
                       onClick={() => handleDeleteSubtask(subtask.id)}
                       className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all"

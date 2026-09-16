@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: ai-kanban-api
+    env: node
+    rootDir: backend
+    buildCommand: npm ci && npm run db:generate && npm run build
+    startCommand: npm run db:push && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AI_PROVIDER
+        value: mock
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: FRONTEND_URL
+        sync: false
+      - key: RAG_TOP_K
+        value: "5"
+      - key: RAG_SIMILARITY_THRESHOLD
+        value: "0.6"
+      - key: CHUNK_SIZE
+        value: "500"
+      - key: CHUNK_OVERLAP
+        value: "50"

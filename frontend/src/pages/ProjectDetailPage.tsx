@@ -371,7 +371,7 @@ export default function ProjectDetailPage() {
                       </div>
                     </div>
 
-                    {safeParseJson<unknown>(exec.parsedJson, null) && (
+                    {!!safeParseJson<unknown>(exec.parsedJson, null) && (
                       <div className="mt-3">
                         <JSONViewer data={safeParseJson<unknown>(exec.parsedJson, null)} title="Parsed Plan" compact />
                       </div>

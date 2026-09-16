@@ -22,7 +22,7 @@ api.interceptors.response.use(
     // A static Netlify deployment returns index.html for an unconfigured `/api`
     // request. Treat it as an API error instead of passing HTML to page code that
     // expects JSON, which otherwise results in a blank/crashed project page.
-    const contentType = response.headers['content-type'] ?? '';
+    const contentType = String(response.headers['content-type'] ?? '');
     if (typeof response.data === 'string' && contentType.includes('text/html')) {
       return Promise.reject(new Error(
         'API is not configured. Set VITE_API_URL in Netlify to your deployed backend URL.'

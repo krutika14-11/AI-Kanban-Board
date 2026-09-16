@@ -197,6 +197,14 @@ The frontend runs on **http://localhost:5173**
 
 Netlify deploys the React frontend only; the Express API, SQLite database, and AI/RAG services must run on a separate backend host. In Netlify, set the `VITE_API_URL` environment variable to that backend's public URL (with or without a trailing `/api`) before building. Without it, requests to `/api` are handled by the static-site fallback and project pages cannot load or generate plans.
 
+#### Render backend
+
+This repository includes `render.yaml` for deploying the API on Render. In Render, create a Blueprint from the repository and set `FRONTEND_URL` to the deployed Netlify URL. The default deployment uses the mock AI provider and SQLite; Render's local filesystem is ephemeral, so use a persistent database before treating the deployment as production data storage.
+
+#### Netlify frontend
+
+Create a site from the same repository. The existing `netlify.toml` sets the frontend base directory to `frontend`, uses `npm run build`, and publishes `frontend/dist`. Add `VITE_API_URL` in Netlify's environment variables using the Render service URL, then trigger a new deploy.
+
 ---
 
 ## Environment Variables

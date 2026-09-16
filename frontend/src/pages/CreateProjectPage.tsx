@@ -45,6 +45,7 @@ export default function CreateProjectPage() {
     { id: 'persist', label: 'Creating Kanban board', status: 'pending' },
   ]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function updateStage(id: string, status: GenerationStage['status']) {
     setStages(prev => prev.map(s => s.id === id ? { ...s, status } : s));
@@ -61,11 +62,14 @@ export default function CreateProjectPage() {
   }
 
   async function handleSubmit(withAI: boolean) {
+    if (isSubmitting) return;
+
     if (!form.name.trim() || !form.goal.trim()) {
       toast.error('Name and goal are required');
       return;
     }
 
+    setIsSubmitting(true);
     try {
       // Create project first
       const project = await createProject.mutateAsync({
@@ -105,9 +109,12 @@ export default function CreateProjectPage() {
       updateStage('persist', 'done');
       await delay(500);
       navigate(`/projects/${project.id}`);
-    } catch {
+    } catch (error) {
       setStages(prev => prev.map(s => s.status === 'active' ? { ...s, status: 'error' } : s));
       setIsGenerating(false);
+      toast.error(error instanceof Error ? error.message : 'Unable to create project');
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -287,8 +294,9 @@ export default function CreateProjectPage() {
         {!isGenerating && (
           <div className="flex gap-3">
             <button
+              type="button"
               onClick={() => handleSubmit(true)}
-              disabled={createProject.isPending || !form.name || !form.goal}
+              disabled={isSubmitting || !form.name || !form.goal}
               className="btn-primary flex items-center gap-2 flex-1 justify-center"
             >
               <Cpu className="w-4 h-4" />
@@ -298,8 +306,9 @@ export default function CreateProjectPage() {
               )}
             </button>
             <button
+              type="button"
               onClick={() => handleSubmit(false)}
-              disabled={createProject.isPending || !form.name || !form.goal}
+              disabled={isSubmitting || !form.name || !form.goal}
               className="btn-secondary"
             >
               Create Without AI

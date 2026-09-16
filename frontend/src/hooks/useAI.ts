@@ -15,10 +15,11 @@ export function useGeneratePlan(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: aiService.generatePlan,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tasks', projectId] });
-      qc.invalidateQueries({ queryKey: ['projects', projectId] });
-      qc.invalidateQueries({ queryKey: ['ai', 'executions', projectId] });
+    onSuccess: (_data, variables) => {
+      const targetProjectId = variables.projectId || projectId;
+      qc.invalidateQueries({ queryKey: ['tasks', targetProjectId] });
+      qc.invalidateQueries({ queryKey: ['projects', targetProjectId] });
+      qc.invalidateQueries({ queryKey: ['ai', 'executions', targetProjectId] });
       toast.success('AI plan generated successfully!');
     },
     onError: (err: Error) => {

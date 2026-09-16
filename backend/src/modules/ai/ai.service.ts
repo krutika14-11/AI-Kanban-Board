@@ -101,6 +101,9 @@ export const aiService = {
     });
 
     if (!plan) {
+      if (config.ai.provider === 'ollama') {
+        throw new AppError(503, 'AI provider is unavailable. Start Ollama or set AI_PROVIDER=mock, then try again.');
+      }
       throw new AppError(422, `AI failed to generate a valid plan after ${MAX_RETRIES} attempts. Last error: ${lastError}`);
     }
 

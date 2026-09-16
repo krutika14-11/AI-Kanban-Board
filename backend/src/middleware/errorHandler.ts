@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { ZodError } from 'zod';
 
 export class AppError extends Error {
   constructor(
@@ -26,6 +27,14 @@ export function errorHandler(
     return;
   }
 
+  if (err instanceof ZodError) {
+    res.status(400).json({
+      success: false,
+      error: err.errors.map(issue => `${issue.path.join('.') || 'request'}: ${issue.message}`).join('; '),
+    });
+    return;
+  }
+
   // Prisma known errors
   if (err.constructor.name === 'PrismaClientKnownRequestError') {
     const prismaErr = err as unknown as { code: string; meta?: { cause?: string } };
@@ -35,6 +44,13 @@ export function errorHandler(
     }
     if (prismaErr.code === 'P2002') {
       res.status(409).json({ success: false, error: 'Record already exists' });
+      return;
+    }
+    if (prismaErr.code === 'P2021') {
+      res.status(503).json({
+        success: false,
+        error: 'Database is not initialized. Run npm run db:push before starting the API.',
+      });
       return;
     }
   }

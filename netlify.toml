@@ -1,6 +1,6 @@
 [build]
   base    = "frontend"
-  command = "npm run build"
+  command = "npm install --no-save --force @rollup/rollup-linux-x64-gnu@4.63.0 && npm run build"
   publish = "dist"
 
 [[redirects]]
